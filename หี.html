@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEAT - Loadstring Generator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #080808;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        /* Card Style */
+        .card {
+            background-color: #121212;
+            border: 1px solid #2a1818;
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        /* Main Brand Title */
+        .brand-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 87, 34, 0.6);
+            margin-bottom: 12px;
+        }
+
+        .sub-title {
+            font-size: 1.1rem;
+            color: #ff5722;
+            font-weight: 600;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            text-align: left;
+            margin-bottom: 16px;
+        }
+
+        .label {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            display: block;
+            color: #e0e0e0;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 14px;
+            background-color: #1a1a1a;
+            border: 1.5px solid #e64a19;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-box:focus {
+            box-shadow: 0 0 8px rgba(230, 74, 25, 0.5);
+        }
+
+        .input-box::placeholder {
+            color: #666;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #ff5722, #ff7043);
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .btn-copy {
+            background-color: #2e7d32;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .btn-clear {
+            background-color: #424242;
+            color: #ffffff;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        textarea.input-box {
+            height: 70px;
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Main Card -->
+        <div class="card">
+            <div class="brand-title">PEAT</div>
+            
+            <div class="sub-title">
+                🔗 สร้าง Loadstring สั้นๆ
+            </div>
+
+            <div class="form-group">
+                <label class="label">วางลิงก์สคริปต์ที่นี่ 👇</label>
+                <input type="text" id="scriptUrl" class="input-box" placeholder="https://raw.githubusercontent.com/...">
+            </div>
+
+            <button class="btn btn-generate" onclick="generateLoadstring()">
+                ⚡ สร้างทันที
+            </button>
+
+            <div class="form-group">
+                <label class="label">✅ โค้ดพร้อมใช้งาน</label>
+                <textarea id="outputResult" class="input-box" readonly placeholder="รอสร้าง..."></textarea>
+            </div>
+
+            <button class="btn btn-copy" onclick="copyResult()">
+                📋 คัดลอก
+            </button>
+
+            <button class="btn btn-clear" onclick="clearAll()">
+                🗑️ ล้างข้อมูล
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function generateLoadstring() {
+            const urlInput = document.getElementById('scriptUrl').value.trim();
+            const outputBox = document.getElementById('outputResult');
+
+            if (!urlInput) {
+                alert('กรุณาวางลิงก์สคริปต์ก่อนครับ!');
+                return;
+            }
+
+            const loadstringCode = `loadstring(game:HttpGet("${urlInput}"))()`;
+            outputBox.value = loadstringCode;
+        }
+
+        function copyResult() {
+            const outputBox = document.getElementById('outputResult');
+            
+            if (!outputBox.value || outputBox.value === 'รอสร้าง...') {
+                alert('ยังไม่มีโค้ดให้คัดลอก!');
+                return;
+            }
+
+            outputBox.select();
+            document.execCommand('copy');
+            alert('คัดลอกโค้ดเรียบร้อยแล้ว!');
+        }
+
+        function clearAll() {
+            document.getElementById('scriptUrl').value = '';
+            document.getElementById('outputResult').value = '';
+        }
+    </script>
+</body>
+</html>
