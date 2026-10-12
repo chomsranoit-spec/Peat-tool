@@ -27,7 +27,6 @@
             max-width: 450px;
         }
 
-        /* Card Style */
         .card {
             background-color: #121212;
             border: 1px solid #2a1818;
@@ -37,7 +36,6 @@
             text-align: center;
         }
 
-        /* Main Brand Title */
         .brand-title {
             font-size: 2.5rem;
             font-weight: 900;
@@ -58,7 +56,6 @@
             gap: 6px;
         }
 
-        /* Form Elements */
         .form-group {
             text-align: left;
             margin-bottom: 16px;
@@ -91,7 +88,6 @@
             color: #666;
         }
 
-        /* Buttons */
         .btn {
             width: 100%;
             padding: 14px;
@@ -133,15 +129,14 @@
         }
 
         textarea.input-box {
-            height: 70px;
-            resize: none;
+            height: 100px;
+            resize: vertical;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Main Card -->
         <div class="card">
             <div class="brand-title">PEAT</div>
             
@@ -150,17 +145,17 @@
             </div>
 
             <div class="form-group">
-                <label class="label">วางลิงก์สคริปต์ที่นี่ 👇</label>
-                <input type="text" id="scriptUrl" class="input-box" placeholder="https://raw.githubusercontent.com/...">
+                <label class="label">วางสคริปต์หรือลิงก์ Raw ที่นี่ 👇</label>
+                <textarea id="scriptInput" class="input-box" placeholder="วางโค้ด Lua หรือวางลิงก์ Raw สคริปต์ได้เลย..."></textarea>
             </div>
 
-            <button class="btn btn-generate" onclick="generateLoadstring()">
+            <button class="btn btn-generate" id="genBtn" onclick="processScript()">
                 ⚡ สร้างทันที
             </button>
 
             <div class="form-group">
                 <label class="label">✅ โค้ดพร้อมใช้งาน</label>
-                <textarea id="outputResult" class="input-box" readonly placeholder="รอสร้าง..."></textarea>
+                <textarea id="outputResult" class="input-box" style="height:70px;" readonly placeholder="รอสร้าง..."></textarea>
             </div>
 
             <button class="btn btn-copy" onclick="copyResult()">
@@ -174,23 +169,65 @@
     </div>
 
     <script>
-        function generateLoadstring() {
-            const urlInput = document.getElementById('scriptUrl').value.trim();
+        async function processScript() {
+            const input = document.getElementById('scriptInput').value.trim();
             const outputBox = document.getElementById('outputResult');
+            const genBtn = document.getElementById('genBtn');
 
-            if (!urlInput) {
-                alert('กรุณาวางลิงก์สคริปต์ก่อนครับ!');
+            if (!input) {
+                alert('กรุณาวางสคริปต์ก่อนครับ!');
                 return;
             }
 
-            const loadstringCode = `loadstring(game:HttpGet("${urlInput}"))()`;
-            outputBox.value = loadstringCode;
+            // ถ้าผู้ใช้ใส่ลิงก์เข้ามาอยู่แล้ว ให้ใช้ลิงก์นั้นสร้าง loadstring ทันที
+            if (input.startsWith('http://') || input.startsWith('https://')) {
+                outputBox.value = `loadstring(game:HttpGet("${input}"))()`;
+                return;
+            }
+
+            // ถ้าผู้ใช้ใส่โค้ด Lua มา ให้ส่งไปอัปโหลดขึ้น GitHub Gist แบบอานอนิมัส
+            genBtn.disabled = true;
+            genBtn.innerText = "⏳ กำลังสร้างลิงก์...";
+            outputBox.value = "กำลังสร้าง Loadstring กรุณารอสักครู่...";
+
+            try {
+                const response = await fetch('https://api.github.com/gists', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "description": "Created via PEAT Loadstring Generator",
+                        "public": true,
+                        "files": {
+                            "script.lua": {
+                                "content": input
+                            }
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                if (data.files && data.files['script.lua']) {
+                    const rawUrl = data.files['script.lua'].raw_url;
+                    outputBox.value = `loadstring(game:HttpGet("${rawUrl}"))()`;
+                } else {
+                    alert('เกิดข้อผิดพลาดในการอัปโหลดโค้ด');
+                    outputBox.value = '';
+                }
+            } catch (err) {
+                alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                outputBox.value = '';
+            } finally {
+                genBtn.disabled = false;
+                genBtn.innerText = "⚡ สร้างทันที";
+            }
         }
 
         function copyResult() {
             const outputBox = document.getElementById('outputResult');
             
-            if (!outputBox.value || outputBox.value === 'รอสร้าง...') {
+            if (!outputBox.value || outputBox.value.startsWith('กำลัง') || outputBox.value === 'รอสร้าง...') {
                 alert('ยังไม่มีโค้ดให้คัดลอก!');
                 return;
             }
@@ -201,7 +238,7 @@
         }
 
         function clearAll() {
-            document.getElementById('scriptUrl').value = '';
+            document.getElementById('scriptInput').value = '';
             document.getElementById('outputResult').value = '';
         }
     </script>
